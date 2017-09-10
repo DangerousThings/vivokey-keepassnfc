@@ -53,11 +53,14 @@ public class KPApplet {
 
 	private static final int MAX_CHUNK_SIZE = 120;
 
-	// AID of the KPNFC decryptor: f0 37 54 72  80 4f d5 fa  0f 24 3e 42  c1 b6 38 25
+	// AID of the Vivokey KPNFC decryptor: A0 00 00 07 47 00 99 84 8A 60
 	private static final byte[] selectKPNFCAppletAPDU = {
-			(byte) 0x00, (byte) 0xA4, (byte) 0x04, (byte) 0x00, (byte) 0x10,
-			(byte) 0xf0, (byte) 0x37, (byte) 0x54, (byte) 0x72, (byte) 0x80, (byte) 0x4f, (byte) 0xd5, (byte) 0xfa, // AID
-			(byte) 0x0f, (byte) 0x24, (byte) 0x3e, (byte) 0x42, (byte) 0xc1, (byte) 0xb6, (byte) 0x38, (byte) 0x25, // AID
+			(byte) 0x00, (byte) 0xA4, (byte) 0x04, (byte) 0x00, (byte) 0x0a,
+
+			(byte) 0xA0, (byte) 0x00, (byte) 0x00, (byte) 0x07,
+			(byte) 0x47, (byte) 0x00, (byte) 0x99, (byte) 0x84,
+			(byte) 0x8A, (byte) 0x60,
+
 			(byte) 0x00,
 	};
 

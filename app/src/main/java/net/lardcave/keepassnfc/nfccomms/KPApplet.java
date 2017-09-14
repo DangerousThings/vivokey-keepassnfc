@@ -1,6 +1,7 @@
 package net.lardcave.keepassnfc.nfccomms;
 
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
@@ -78,6 +79,11 @@ public class KPApplet {
 
 	private SecureRandom rng = new SecureRandom();
 
+	public static IntentFilter getIntentFilter() {
+		IntentFilter filter = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+		return filter;
+	}
+
 	private IsoDep connect(Intent intent) throws IOException {
 		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 
@@ -92,12 +98,15 @@ public class KPApplet {
 		// it's hard to say exactly how long.
 		channel.setTimeout(2000);
 
-		channel.transceive(selectKPNFCAppletAPDU);
-
-		return channel;
+		byte[] result = channel.transceive(selectKPNFCAppletAPDU);
+		if(!resultWasSuccess(result, 2)) {
+			return null;
+		} else {
+			return channel;
+		}
 	}
 
-	public boolean write(Intent intent, byte[] secret) throws IOException {
+	public boolean write(Intent intent, byte[] secret, boolean writeNdef) throws IOException {
 		IsoDep channel = connect(intent);
 		if(channel == null) {
 			return false;
@@ -105,15 +114,18 @@ public class KPApplet {
 
 			setPasswordKey(channel, secret);
 
-			// Attempt to write NDEF as well.
-			writeNdef(channel, KPNdef.createWakeOnlyNdefMessage());
+			if(writeNdef) {
+				// Attempt to write NDEF as well.
+				doWriteNdef(channel, KPNdef.createWakeOnlyNdefMessage());
+			}
+
 			channel.close();
 
 			return true;
 		}
 	}
 
-	private boolean writeNdef(IsoDep channel, NdefMessage ndefMessage) throws IOException {
+	private boolean doWriteNdef(IsoDep channel, NdefMessage ndefMessage) throws IOException {
 		byte[] result;
 
 		byte[] ndefData = ndefMessage.toByteArray();
@@ -262,16 +274,18 @@ public class KPApplet {
 		}
 	}
 
-	private void setPasswordKey(IsoDep channel, byte[] passwordKey) throws IOException {
+	private boolean setPasswordKey(IsoDep channel, byte[] passwordKey) throws IOException {
 		byte[] encryptedPasswordKey = encryptWithCardKey(channel, passwordKey);
 		if(encryptedPasswordKey == null) {
-			return;
+			return false;
 		}
 
 		writeToScratchArea(channel, encryptedPasswordKey);
 
 		byte[] command = constructApdu(INS_CARD_SET_PASSWORD_KEY);
-		channel.transceive(command);
+		byte[] result = channel.transceive(command);
+
+		return resultWasSuccess(result, 2);
 	}
 
 	private void writeToScratchArea(IsoDep channel, byte[] data) throws IOException {

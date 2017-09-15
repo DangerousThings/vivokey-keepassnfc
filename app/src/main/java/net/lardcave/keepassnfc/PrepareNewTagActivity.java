@@ -43,6 +43,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -89,7 +90,7 @@ public class PrepareNewTagActivity extends Activity {
 
 		/* Populate the list of available apps */
 		for(KeePassApp app: KeePassApps.get().getAvailableApps(getPackageManager())) {
-			availableAppNames.add(new StringWithId(app.getName(), app.getId()));
+			availableAppNames.add(new StringWithId("Launch " + app.getName(), app.getId()));
 		}
 
 		if(availableAppNames.isEmpty()) {
@@ -126,7 +127,8 @@ public class PrepareNewTagActivity extends Activity {
 	private void initialiseView()
 	{
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-		
+		findViewById(R.id.b_noKeyfile).setVisibility(View.INVISIBLE);
+
 		Button b = (Button) findViewById(R.id.write_nfc);
 		b.setOnClickListener(new OnClickListener() {
 			@Override
@@ -154,6 +156,7 @@ public class PrepareNewTagActivity extends Activity {
 			@Override
 			public void onClick(View view) {
 				((TextView)findViewById(R.id.keyfile_name)).setText("");
+				view.setVisibility(View.INVISIBLE);
 			}
 		});
 
@@ -179,6 +182,11 @@ public class PrepareNewTagActivity extends Activity {
 				selectedAppId = null;
 			}
 		});
+
+		if(availableAppNames.size() == 1) {
+			appsList.setVisibility(View.INVISIBLE);
+		}
+
 	}
 
 	@Override
@@ -188,7 +196,8 @@ public class PrepareNewTagActivity extends Activity {
 	        if (resultCode == RESULT_OK) {  
 	            // The URI of the selected file 
 	            keyfile = data.getData();
-		        ((TextView)findViewById(R.id.keyfile_name)).setText(keyfile.toString());
+		        ((TextView)findViewById(R.id.keyfile_name)).setText(keyfile.getLastPathSegment());
+		        findViewById(R.id.b_noKeyfile).setVisibility(View.VISIBLE);
 	        } else {
 				System.err.println("REQUEST_KEYFILE result code " + resultCode);
 			}
@@ -196,7 +205,7 @@ public class PrepareNewTagActivity extends Activity {
 	    case REQUEST_DATABASE:
 	    	if (resultCode == RESULT_OK) {
 	    		database = data.getData();
-			    ((TextView)findViewById(R.id.database_name)).setText(database.toString());
+			    ((TextView)findViewById(R.id.database_name)).setText(database.getLastPathSegment());
 	    	} else {
 				System.err.println("REQUEST_DATABASE result code " + resultCode);
 			}
@@ -221,7 +230,6 @@ public class PrepareNewTagActivity extends Activity {
                 if (random_bytes != null && encrypt_and_store(random_bytes)) {
                     // Job well done! Let's have some toast.
                     Toast.makeText(getApplicationContext(), "Tag written successfully!", Toast.LENGTH_SHORT).show();
-	                switchToMainActivity();
                 } else {
                     Toast.makeText(getApplicationContext(), "Error writing to application database!", Toast.LENGTH_SHORT).show();
                 }
@@ -284,6 +292,35 @@ public class PrepareNewTagActivity extends Activity {
 		Intent intent = new Intent(this, MainActivity.class);
 		startActivity(intent);
 		finish();
+	}
+
+	@Override
+	public void onNewIntent(Intent intent) {
+		DatabaseInfo dbinfo = null;
+
+		try {
+			dbinfo = NfcReadActions.getDbInfoFromIntent(this, intent);
+		} catch (NfcReadActions.Error error) {
+			Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+		}
+
+		if(dbinfo != null) {
+			NfcReadActions.startKeepassActivity(this, dbinfo);
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		NfcReadActions.nfc_enable(this);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		NfcReadActions.nfc_disable(this);
 	}
 
 }

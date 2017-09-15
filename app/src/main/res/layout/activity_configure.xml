@@ -1,79 +1,85 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
+
+	<ImageView
+		android:id="@+id/vivoLogo"
+		android:layout_width="wrap_content"
+		android:layout_height="120dp"
+		android:layout_alignParentTop="true"
+		android:layout_toStartOf="@+id/write_nfc"
+		android:src="@drawable/logo"
+		app:srcCompat="@drawable/logo"
+		android:layout_alignParentEnd="true"/>
+
 
 	<RelativeLayout
 		android:id="@+id/rl_database"
 		android:layout_width="match_parent"
 	    android:layout_height="wrap_content"
-		android:layout_marginLeft="18dp"
-		android:layout_marginTop="14dp"
+		android:layout_marginLeft="36dp"
+		android:layout_marginTop="10dp"
+		android:layout_below="@+id/vivoLogo"
 		>
-		<TextView
-			android:id="@+id/tv_database"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentLeft="true"
-			android:layout_alignParentTop="true"
-			android:text="Database"
-			android:textAppearance="@style/TextAppearance.AppCompat.Medium"/>
-
+		<ImageView
+			android:id="@+id/ivDatabase"
+			android:layout_width="80dp"
+			android:layout_height="80dp"
+		    android:src="@drawable/button_database"
+			/>
 
 	    <TextView
 		    android:id="@+id/database_name"
 		    android:layout_width="fill_parent"
 		    android:layout_height="wrap_content"
-		    android:layout_below="@+id/tv_database"
-		    android:layout_gravity="bottom"
+		    android:layout_toEndOf="@+id/ivDatabase"
+		    android:layout_centerVertical="true"
+		    android:lines="1"
 		    android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
-
-		<View style="@style/Divider"
-			android:layout_below = "@+id/database_name"
-			/>
 	</RelativeLayout>
 
 	<RelativeLayout
 		android:id="@+id/rl_keyfile"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="18dp"
+		android:layout_marginLeft="36dp"
 		android:layout_below="@+id/rl_database"
+	    android:paddingTop="5dp"
 		>
 
-		<TextView
-	        android:id="@+id/tv_keyfile"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="Keyfile"
-	        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+		<ImageView
+			android:id="@+id/ivKeyFile"
+			android:layout_width="80dp"
+			android:layout_height="80dp"
+			android:src="@drawable/button_keyfile"
+			/>
 
 		<RelativeLayout
 			android:id="@+id/rl_keyfile_internal"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_below="@+id/tv_keyfile">
+			android:layout_height="80dp"
+			android:layout_toEndOf="@+id/ivKeyFile">
 		    <TextView
 			    android:id="@+id/keyfile_name"
 			    android:layout_width="fill_parent"
 			    android:layout_height="wrap_content"
-			    android:layout_gravity="bottom"
-			    android:layout_weight="1"
+			    android:layout_centerVertical="true"
 			    android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 			<ImageButton
 				android:id="@+id/b_noKeyfile"
 				android:layout_width="20dp"
 				android:layout_height="20dp"
+				android:layout_alignTop="@+id/keyfile_name"
 				android:layout_alignParentEnd="true"
 				android:adjustViewBounds="false"
 				android:background="@drawable/x_drawable"
-				android:visibility="visible"/>
+				android:visibility="visible"
+				android:contentDescription="Clear keyfile"/>
 		</RelativeLayout>
 
-		<View style="@style/Divider"
-		      android:layout_below = "@+id/rl_keyfile_internal"
-			/>
 	</RelativeLayout>
 
 
@@ -81,78 +87,67 @@
 		android:id="@+id/rl_password"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="18dp"
+		android:layout_marginLeft="36dp"
 		android:layout_below="@+id/rl_keyfile"
+		android:paddingTop="5dp"
 		>
 
-	    <TextView
-	        android:id="@+id/tv_password"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="Password"
-	        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+		<ImageView
+			android:id="@+id/ivPassword"
+			android:layout_width="80dp"
+			android:layout_height="80dp"
+			android:src="@drawable/button_password"
+			/>
 
 
 	    <EditText
 	        android:id="@+id/password"
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
-	        android:layout_below="@+id/tv_password"
+	        android:layout_centerVertical="true"
+	        android:layout_toEndOf="@+id/ivPassword"
 	        android:inputType="textPassword"
 	         >
 	    </EditText>
 
-		<View style="@style/Divider"
-		      android:layout_below = "@+id/password"
-			/>
 	</RelativeLayout>
 
 	<RelativeLayout
 		android:id="@+id/rl_app_choice"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:layout_marginLeft="18dp"
+		android:layout_marginLeft="36dp"
 		android:layout_below="@+id/rl_password"
+		android:paddingTop="5dp"
 		>
-
-		<TextView
-			android:id="@+id/tv_appchoice"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="App"
-			android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
 		<Spinner
 			android:id="@+id/s_keepass_app"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_below="@+id/tv_appchoice"
 			android:layout_marginTop="7dp"/>
 
-		<View style="@style/Divider"
-		      android:layout_below = "@+id/s_keepass_app"
-			/>
 	</RelativeLayout>
 
 	<Button
 		android:id="@+id/write_nfc"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_below="@+id/rl_app_choice"
+		android:layout_above="@+id/tvIfAlreadyConfigured"
 		android:layout_centerHorizontal="true"
-		android:layout_marginTop="16dp"
+		android:layout_marginTop="8dp"
 
-		android:text="Write NFC"
+		android:text="Configure VivoKey"
 		android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button"/>
 
-	<ImageView
-		android:id="@+id/imageView1"
+	<TextView
+		android:id="@+id/tvIfAlreadyConfigured"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
-		android:layout_alignParentEnd="true"
-		android:src="@drawable/radio_tower" />
-
-
+		android:layout_marginStart="20dp"
+		android:layout_marginEnd="20dp"
+		android:layout_centerHorizontal="true"
+		android:text="If already configured, scan your VivoKey now to launch the default KeePass client."/>
 
 </RelativeLayout>

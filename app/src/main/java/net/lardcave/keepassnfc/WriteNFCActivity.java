@@ -112,7 +112,12 @@ public class WriteNFCActivity extends Activity {
 				// try NDEF instead.
 				Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
 				KPNdef ndef = new KPNdef(randomBytes);
-				ndefWritten = ndef.write(tag);
+				try {
+					ndefWritten = ndef.write(tag);
+				} catch (Exception e) {
+					e.printStackTrace();
+					ndefWritten = false;
+				}
 			}
 
 			Intent resultIntent = new Intent();

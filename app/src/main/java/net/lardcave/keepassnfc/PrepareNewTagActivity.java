@@ -129,6 +129,9 @@ public class PrepareNewTagActivity extends Activity {
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		findViewById(R.id.b_noKeyfile).setVisibility(View.INVISIBLE);
 
+		((TextView)(findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
+		((TextView)(findViewById(R.id.database_name))).setText(R.string.no_db_selected);
+
 		Button b = (Button) findViewById(R.id.write_nfc);
 		b.setOnClickListener(new OnClickListener() {
 			@Override
@@ -155,7 +158,8 @@ public class PrepareNewTagActivity extends Activity {
 		findViewById(R.id.b_noKeyfile).setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				((TextView)findViewById(R.id.keyfile_name)).setText("");
+				((TextView)findViewById(R.id.keyfile_name)).setText(R.string.no_keyfile_selected);
+				keyfile = null;
 				view.setVisibility(View.INVISIBLE);
 			}
 		});

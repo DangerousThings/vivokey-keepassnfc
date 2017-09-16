@@ -1,5 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
@@ -29,14 +30,15 @@
 		    android:src="@drawable/button_database"
 			/>
 
-	    <TextView
-		    android:id="@+id/database_name"
-		    android:layout_width="fill_parent"
-		    android:layout_height="wrap_content"
-		    android:layout_toEndOf="@+id/ivDatabase"
-		    android:layout_centerVertical="true"
-		    android:lines="1"
-		    android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+		<TextView
+			android:id="@+id/database_name"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_toEndOf="@+id/ivDatabase"
+			android:lines="1"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+			/>
 
 	</RelativeLayout>
 
@@ -61,12 +63,14 @@
 			android:layout_width="match_parent"
 			android:layout_height="80dp"
 			android:layout_toEndOf="@+id/ivKeyFile">
-		    <TextView
-			    android:id="@+id/keyfile_name"
-			    android:layout_width="fill_parent"
-			    android:layout_height="wrap_content"
-			    android:layout_centerVertical="true"
-			    android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+
+			<TextView
+				android:id="@+id/keyfile_name"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:layout_centerVertical="true"
+				android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+				/>
 
 			<ImageButton
 				android:id="@+id/b_noKeyfile"

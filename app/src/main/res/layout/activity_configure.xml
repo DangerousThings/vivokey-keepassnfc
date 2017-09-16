@@ -132,26 +132,36 @@
 			android:layout_marginTop="7dp"/>
 
 	</RelativeLayout>
-
 	<Button
 		android:id="@+id/write_nfc"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_above="@+id/tvIfAlreadyConfigured"
-		android:layout_centerHorizontal="true"
-		android:layout_marginTop="8dp"
 
 		android:text="Configure VivoKey"
-		android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button"/>
+		android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button"
+		android:layout_above="@+id/tvIfAlreadyConfigured"
+		android:layout_centerHorizontal="true"/>
 
 	<TextView
 		android:id="@+id/tvIfAlreadyConfigured"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentBottom="true"
-		android:layout_marginStart="20dp"
-		android:layout_marginEnd="20dp"
+		android:layout_marginStart="35dp"
+		android:layout_marginEnd="35dp"
 		android:layout_centerHorizontal="true"
 		android:text="If already configured, scan your VivoKey now to launch the default KeePass client."/>
+
+	<ImageView
+		android:id="@+id/ib_questionmark"
+		android:layout_width="30dp"
+		android:layout_height="30dp"
+		android:layout_alignParentBottom="true"
+		android:layout_alignParentRight="true"
+		android:contentDescription="Question mark icon"
+		android:layout_marginBottom="2dp"
+		android:layout_marginRight="2dp"
+		android:src="@drawable/question"/>
+
 
 </RelativeLayout>

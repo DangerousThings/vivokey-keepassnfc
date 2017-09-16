@@ -68,6 +68,7 @@ public class PrepareNewTagActivity extends Activity {
 	private static final int REQUEST_KEYFILE = 0;
 	private static final int REQUEST_DATABASE = 1;
     private static final int REQUEST_NFC_WRITE = 2;
+	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.com/keepassnfc");
 	private Uri keyfile = null;
 	private Uri database = null;
 
@@ -161,6 +162,14 @@ public class PrepareNewTagActivity extends Activity {
 				((TextView)findViewById(R.id.keyfile_name)).setText(R.string.no_keyfile_selected);
 				keyfile = null;
 				view.setVisibility(View.INVISIBLE);
+			}
+		});
+
+		findViewById(R.id.ib_questionmark).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent(Intent.ACTION_VIEW, whatIsKPNFCUrl);
+				startActivity(intent);
 			}
 		});
 

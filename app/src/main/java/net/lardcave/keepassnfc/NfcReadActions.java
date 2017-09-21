@@ -71,7 +71,7 @@ class NfcReadActions {
 		DatabaseInfo dbinfo = DatabaseInfo.deserialise(ctx);
 
 		if(dbinfo == null) {
-			throw new Error("No KPNFC database set up.");
+			throw new Error("VivoKey KeePass applet not configured!");
 		}
 
 		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {

@@ -88,8 +88,14 @@ public class PrepareNewTagActivity extends Activity {
 			else
 				keyfile = null;
 		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
 
 		/* Populate the list of available apps */
+		availableAppNames.clear();
 		for(KeePassApp app: KeePassApps.get().getAvailableApps(getPackageManager())) {
 			availableAppNames.add(new StringWithId("Launch " + app.getName(), app.getId()));
 		}
@@ -102,7 +108,18 @@ public class PrepareNewTagActivity extends Activity {
 		} else {
 			initialiseView();
 		}
+
+		setWriteNfcButtonEnabled();
+		NfcReadActions.nfc_enable(this);
 	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		NfcReadActions.nfc_disable(this);
+	}
+
 
 	@Override
 	protected void onSaveInstanceState(Bundle sis)
@@ -113,7 +130,6 @@ public class PrepareNewTagActivity extends Activity {
 	    else
 	    	sis.putString("keyfile", keyfile.toString());
 
-		Log.d("KPNFC", "Saved instance state");
 	}
 
 	private void openPicker(int result) {
@@ -130,8 +146,17 @@ public class PrepareNewTagActivity extends Activity {
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 		findViewById(R.id.b_noKeyfile).setVisibility(View.INVISIBLE);
 
-		((TextView)(findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
-		((TextView)(findViewById(R.id.database_name))).setText(R.string.no_db_selected);
+		if(keyfile == null) {
+			((TextView) (findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
+		} else {
+			((TextView) (findViewById(R.id.keyfile_name))).setText(keyfile.getLastPathSegment());
+		}
+
+		if(database == null) {
+			((TextView) (findViewById(R.id.database_name))).setText(R.string.no_db_selected);
+		} else {
+			((TextView) (findViewById(R.id.database_name))).setText(database.getLastPathSegment());
+		}
 
 		Button b = (Button) findViewById(R.id.write_nfc);
 		b.setOnClickListener(new OnClickListener() {
@@ -141,6 +166,7 @@ public class PrepareNewTagActivity extends Activity {
 				switchToWriteNfcActivity(getRandomBytes());
 			}
 		});
+		setWriteNfcButtonEnabled();
 
 		findViewById(R.id.rl_database).setOnClickListener(new OnClickListener() {
 			@Override
@@ -198,6 +224,8 @@ public class PrepareNewTagActivity extends Activity {
 
 		if(availableAppNames.size() == 1) {
 			appsList.setVisibility(View.INVISIBLE);
+		} else {
+			appsList.setVisibility(View.VISIBLE);
 		}
 
 	}
@@ -222,6 +250,7 @@ public class PrepareNewTagActivity extends Activity {
 	    	} else {
 				System.err.println("REQUEST_DATABASE result code " + resultCode);
 			}
+		    setWriteNfcButtonEnabled();
 	    	break;
         case REQUEST_NFC_WRITE:
             // Re-enable NFC writing.
@@ -253,7 +282,13 @@ public class PrepareNewTagActivity extends Activity {
         }
 	}
 
-	
+	private void setWriteNfcButtonEnabled()
+	{
+		Button b = (Button) findViewById(R.id.write_nfc);
+
+		b.setEnabled(database != null);
+	}
+
 	private byte[] getRandomBytes()
 	{
 		byte[] random_bytes = new byte[Settings.key_length];
@@ -322,18 +357,5 @@ public class PrepareNewTagActivity extends Activity {
 		}
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		NfcReadActions.nfc_enable(this);
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-
-		NfcReadActions.nfc_disable(this);
-	}
 
 }

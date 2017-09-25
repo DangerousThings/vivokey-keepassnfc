@@ -149,13 +149,13 @@ public class PrepareNewTagActivity extends Activity {
 		if(keyfile == null) {
 			((TextView) (findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
 		} else {
-			((TextView) (findViewById(R.id.keyfile_name))).setText(keyfile.getLastPathSegment());
+			((TextView) (findViewById(R.id.keyfile_name))).setText(getUriFilename(keyfile));
 		}
 
 		if(database == null) {
 			((TextView) (findViewById(R.id.database_name))).setText(R.string.no_db_selected);
 		} else {
-			((TextView) (findViewById(R.id.database_name))).setText(database.getLastPathSegment());
+			((TextView) (findViewById(R.id.database_name))).setText(getUriFilename(database));
 		}
 
 		Button b = (Button) findViewById(R.id.write_nfc);
@@ -230,6 +230,24 @@ public class PrepareNewTagActivity extends Activity {
 
 	}
 
+	private static String getUriFilename(Uri uri)
+	{
+		/* getLastPathSegment will return a directory hierarchy if it feels like it, which seems
+		 * completely wrong, so...
+		 */
+		String lastPathSegment = uri.getLastPathSegment();
+
+		final String stopCharacters = ":/";
+		for(int i = 0; i < stopCharacters.length(); i++) {
+			int idx = lastPathSegment.lastIndexOf(stopCharacters.charAt(i));
+			if(idx != -1) {
+				lastPathSegment = lastPathSegment.substring(idx + 1);
+			}
+		}
+
+		return lastPathSegment;
+	}
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    switch (requestCode) {
@@ -237,7 +255,7 @@ public class PrepareNewTagActivity extends Activity {
 	        if (resultCode == RESULT_OK) {  
 	            // The URI of the selected file 
 	            keyfile = data.getData();
-		        ((TextView)findViewById(R.id.keyfile_name)).setText(keyfile.getLastPathSegment());
+		        ((TextView)findViewById(R.id.keyfile_name)).setText(getUriFilename(keyfile));
 		        findViewById(R.id.b_noKeyfile).setVisibility(View.VISIBLE);
 	        } else {
 				System.err.println("REQUEST_KEYFILE result code " + resultCode);
@@ -246,7 +264,7 @@ public class PrepareNewTagActivity extends Activity {
 	    case REQUEST_DATABASE:
 	    	if (resultCode == RESULT_OK) {
 	    		database = data.getData();
-			    ((TextView)findViewById(R.id.database_name)).setText(database.getLastPathSegment());
+			    ((TextView)findViewById(R.id.database_name)).setText(getUriFilename(database));
 	    	} else {
 				System.err.println("REQUEST_DATABASE result code " + resultCode);
 			}

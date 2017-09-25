@@ -68,7 +68,7 @@ public class PrepareNewTagActivity extends Activity {
 	private static final int REQUEST_KEYFILE = 0;
 	private static final int REQUEST_DATABASE = 1;
     private static final int REQUEST_NFC_WRITE = 2;
-	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.com/keepassnfc");
+	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.co/vivokeepass");
 	private Uri keyfile = null;
 	private Uri database = null;
 

@@ -37,6 +37,7 @@
 			android:layout_centerVertical="true"
 			android:layout_toEndOf="@+id/ivDatabase"
 			android:lines="1"
+			android:gravity="center"
 			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
 			/>
 
@@ -69,6 +70,8 @@
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content"
 				android:layout_centerVertical="true"
+				android:lines="1"
+				android:gravity="center"
 				android:textAppearance="@style/TextAppearance.AppCompat.Body1"
 				/>
 

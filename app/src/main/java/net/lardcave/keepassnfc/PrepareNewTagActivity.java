@@ -35,7 +35,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -68,7 +73,7 @@ public class PrepareNewTagActivity extends Activity {
 	private static final int REQUEST_KEYFILE = 0;
 	private static final int REQUEST_DATABASE = 1;
     private static final int REQUEST_NFC_WRITE = 2;
-	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.co/vivokeepass");
+	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.co/vivokeypass");
 	private Uri keyfile = null;
 	private Uri database = null;
 
@@ -138,13 +143,15 @@ public class PrepareNewTagActivity extends Activity {
 		intent.addCategory(Intent.CATEGORY_OPENABLE);
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
 		intent.setType("*/*");
+		//intent.setData(Uri.parse(Environment.getExternalStorageDirectory().getPath()));
+
 		startActivityForResult(intent, result);
 	}
 
 	private void initialiseView()
 	{
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-		findViewById(R.id.b_noKeyfile).setVisibility(View.INVISIBLE);
+		findViewById(R.id.b_noKeyfile).setVisibility(keyfile == null ? View.INVISIBLE : View.VISIBLE);
 
 		if(keyfile == null) {
 			((TextView) (findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
@@ -196,6 +203,27 @@ public class PrepareNewTagActivity extends Activity {
 			public void onClick(View view) {
 				Intent intent = new Intent(Intent.ACTION_VIEW, whatIsKPNFCUrl);
 				startActivity(intent);
+			}
+		});
+
+		// Only allow NFC writing if a password has been set.
+		((EditText)findViewById(R.id.password)).addTextChangedListener(new TextWatcher() {
+			int beforeLength;
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+				beforeLength = charSequence.length();
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+				if(beforeLength == 0 || editable.length() == 0) {
+					setWriteNfcButtonEnabled();
+				}
 			}
 		});
 
@@ -303,8 +331,9 @@ public class PrepareNewTagActivity extends Activity {
 	private void setWriteNfcButtonEnabled()
 	{
 		Button b = (Button) findViewById(R.id.write_nfc);
+		String password = ((EditText)findViewById(R.id.password)).getText().toString();
 
-		b.setEnabled(database != null);
+		b.setEnabled(database != null && password.length() > 0);
 	}
 
 	private byte[] getRandomBytes()

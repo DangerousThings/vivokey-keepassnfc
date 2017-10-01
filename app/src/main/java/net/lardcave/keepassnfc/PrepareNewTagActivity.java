@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,12 +50,15 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import net.lardcave.keepassnfc.keepassapp.KeePassApp;
 import net.lardcave.keepassnfc.keepassapp.KeePassApps;
+
+import static android.view.View.VISIBLE;
 
 
 /* Probably want this to have foreground NFC-everything, so that people can scan a fob and then press the button?
@@ -151,7 +155,7 @@ public class PrepareNewTagActivity extends Activity {
 	private void initialiseView()
 	{
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-		findViewById(R.id.b_noKeyfile).setVisibility(keyfile == null ? View.INVISIBLE : View.VISIBLE);
+		findViewById(R.id.b_noKeyfile).setVisibility(keyfile == null ? View.INVISIBLE : VISIBLE);
 
 		if(keyfile == null) {
 			((TextView) (findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
@@ -253,9 +257,8 @@ public class PrepareNewTagActivity extends Activity {
 		if(availableAppNames.size() == 1) {
 			appsList.setVisibility(View.INVISIBLE);
 		} else {
-			appsList.setVisibility(View.VISIBLE);
+			appsList.setVisibility(VISIBLE);
 		}
-
 	}
 
 	private static String getUriFilename(Uri uri)
@@ -284,7 +287,7 @@ public class PrepareNewTagActivity extends Activity {
 	            // The URI of the selected file 
 	            keyfile = data.getData();
 		        ((TextView)findViewById(R.id.keyfile_name)).setText(getUriFilename(keyfile));
-		        findViewById(R.id.b_noKeyfile).setVisibility(View.VISIBLE);
+		        findViewById(R.id.b_noKeyfile).setVisibility(VISIBLE);
 	        } else {
 				System.err.println("REQUEST_KEYFILE result code " + resultCode);
 			}
@@ -302,7 +305,7 @@ public class PrepareNewTagActivity extends Activity {
             // Re-enable NFC writing.
 
 	        if(resultCode != 1) {
-		        Toast.makeText(getApplicationContext(), "Couldn't write data to card!", Toast.LENGTH_SHORT).show();
+		        Toast.makeText(getApplicationContext(), "Couldn't update!", Toast.LENGTH_SHORT).show();
 		        break;
 	        }
 
@@ -317,13 +320,13 @@ public class PrepareNewTagActivity extends Activity {
             if (resultCode == 1) {
                 if (random_bytes != null && encrypt_and_store(random_bytes)) {
                     // Job well done! Let's have some toast.
-                    Toast.makeText(getApplicationContext(), "Tag written successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Written successfully!", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getApplicationContext(), "Error writing to application database!", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 // can't think of a good toast analogy for fail
-                Toast.makeText(getApplicationContext(), "Couldn't write tag. :(", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Couldn't update. :(", Toast.LENGTH_SHORT).show();
             }
         }
 	}

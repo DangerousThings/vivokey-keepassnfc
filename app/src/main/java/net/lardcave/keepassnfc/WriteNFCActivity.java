@@ -33,7 +33,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -45,6 +47,66 @@ public class WriteNFCActivity extends Activity {
     private static final String LOG_TAG = "WriteNFCActivity";
 
 	private byte[] randomBytes; // Key
+	private boolean writeNdefToSmartcard;
+
+	private static class WriteTagResult {
+		boolean ndefWritten;
+		boolean appletWritten;
+	}
+
+	private class WriteTagTask extends AsyncTask<Intent, Integer, WriteTagResult>
+	{
+		@Override
+		protected WriteTagResult doInBackground(Intent... ndefIntent) {
+			WriteTagResult result = new WriteTagResult();
+
+			// Attempt to access the card first as a smartcard and then as an NDEF card.
+			result.appletWritten = false;
+			result.ndefWritten = false;
+
+			try {
+				KPApplet applet = new KPApplet();
+				result.appletWritten = applet.write(ndefIntent[0], randomBytes, writeNdefToSmartcard);
+				Log.i(LOG_TAG, "Applet discovered.");
+			} catch (IOException e) {
+				e.printStackTrace();
+				Log.i(LOG_TAG, "Couldn't communicate with applet.");
+			}
+
+			if(!result.appletWritten) {
+				// try NDEF instead.
+				Tag tag = ndefIntent[0].getParcelableExtra(NfcAdapter.EXTRA_TAG);
+				KPNdef ndef = new KPNdef(randomBytes);
+				try {
+					result.ndefWritten = ndef.write(tag);
+				} catch (Exception e) {
+					e.printStackTrace();
+					result.ndefWritten = false;
+					Log.i(LOG_TAG, "Couldn't write plain NDEF");
+				}
+			}
+
+			return result;
+		}
+
+		@Override
+		protected void onPreExecute() {
+			setUpdating(true);
+		}
+
+		@Override
+		protected void onPostExecute(WriteTagResult result) {
+			setUpdating(false);
+
+			Log.i(LOG_TAG, "Write result: applet " + result.appletWritten + " NDEF only " + result.ndefWritten);
+
+			Intent resultIntent = new Intent();
+			resultIntent.putExtra("randomBytes", randomBytes);
+
+			setResult(result.appletWritten || result.ndefWritten ? 1 : 0, resultIntent);
+			finish();
+		}
+	}
 
     protected void onCreate(Bundle sis) {
         super.onCreate(sis);
@@ -72,6 +134,14 @@ public class WriteNFCActivity extends Activity {
             }
         });
 
+	    setUpdating(false);
+
+    }
+
+    private void setUpdating(boolean updating) {
+	    View updating_vivokey = findViewById(R.id.updating_vivokey);
+	    updating_vivokey.setVisibility(updating ? View.VISIBLE : View.INVISIBLE);
+	    updating_vivokey.requestLayout(); // Android bug apparently
     }
 
     @Override
@@ -91,45 +161,14 @@ public class WriteNFCActivity extends Activity {
     @Override
     public void onNewIntent(Intent intent)
     {
-	    boolean writeNdefToSmartcard = ((CheckBox)findViewById(R.id.cbWriteNDEF)).isChecked();
+	    writeNdefToSmartcard = ((CheckBox)findViewById(R.id.cbWriteNDEF)).isChecked();
 
-        String action = intent.getAction();
+	    String action = intent.getAction();
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
 				|| NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
 
-			// Attempt to access the card first as a smartcard and then as an NDEF card.
-
-			boolean appletWritten = false;
-			try {
-				KPApplet applet = new KPApplet();
-				appletWritten = applet.write(intent, randomBytes, writeNdefToSmartcard);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			boolean ndefWritten = false;
-			if(!appletWritten) {
-				// try NDEF instead.
-				Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-				KPNdef ndef = new KPNdef(randomBytes);
-				try {
-					ndefWritten = ndef.write(tag);
-				} catch (Exception e) {
-					e.printStackTrace();
-					ndefWritten = false;
-				}
-			}
-
-			Intent resultIntent = new Intent();
-			resultIntent.putExtra("randomBytes", randomBytes);
-
-			setResult(appletWritten || ndefWritten ? 1 : 0, resultIntent);
-            finish();
+	        new WriteTagTask().execute(intent);
         }
-
-		if(action.equals(NfcAdapter.ACTION_TAG_DISCOVERED)) {
-			System.out.println("Tag only...");
-		}
     }
 
 }

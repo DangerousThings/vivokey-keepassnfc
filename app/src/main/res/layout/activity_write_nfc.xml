@@ -47,6 +47,26 @@
         android:checked="false"
         android:text="Update VivoKey NDEF (if installed) to automatically launch default KeePass client on NFC scan."/>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="invisible"
+        android:layout_below="@+id/cbWriteNDEF"
+        android:id="@+id/updating_vivokey"
+	    android:layout_marginTop="10dp">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="visible"/>
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="Updating VivoKey..."/>
+
+    </LinearLayout>
 
 </RelativeLayout>

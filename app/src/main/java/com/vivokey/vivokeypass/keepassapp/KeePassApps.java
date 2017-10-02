@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc.keepassapp;
+package com.vivokey.vivokeypass.keepassapp;
 
 import android.content.pm.PackageManager;
 

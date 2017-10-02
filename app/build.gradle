@@ -5,7 +5,7 @@ android {
 	buildToolsVersion '25.0.0'
 
 	defaultConfig {
-		applicationId "net.lardcave.keepassnfc"
+		applicationId "com.vivokey.vivokeypass"
 	}
 	buildTypes {
 		release {

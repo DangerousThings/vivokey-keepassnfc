@@ -1,9 +1,9 @@
-package net.lardcave.keepassnfc.keepassapp;
+package com.vivokey.vivokeypass.keepassapp;
 
 import android.content.Context;
 import android.content.Intent;
 
-import net.lardcave.keepassnfc.DatabaseInfo;
+import com.vivokey.vivokeypass.DatabaseInfo;
 
 public interface KeePassApp {
 	String getPackageName();

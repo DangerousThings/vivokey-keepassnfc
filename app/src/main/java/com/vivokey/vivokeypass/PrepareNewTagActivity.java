@@ -25,23 +25,18 @@
  * For more information, please refer to [http://unlicense.org]
  */
 
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.KeyListener;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -49,14 +44,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import net.lardcave.keepassnfc.keepassapp.KeePassApp;
-import net.lardcave.keepassnfc.keepassapp.KeePassApps;
+import com.vivokey.vivokeypass.keepassapp.KeePassApp;
+import com.vivokey.vivokeypass.keepassapp.KeePassApps;
 
 import static android.view.View.VISIBLE;
 
@@ -328,6 +321,9 @@ public class PrepareNewTagActivity extends Activity {
                 // can't think of a good toast analogy for fail
                 Toast.makeText(getApplicationContext(), "Couldn't update. :(", Toast.LENGTH_SHORT).show();
             }
+
+            /* Erase password after write. */
+	        ((EditText)findViewById(R.id.password)).setText("");
         }
 	}
 

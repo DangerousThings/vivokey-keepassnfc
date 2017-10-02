@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc.keepassapp;
+package com.vivokey.vivokeypass.keepassapp;
 
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -8,9 +8,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
 
-import net.lardcave.keepassnfc.DatabaseInfo;
+import com.vivokey.vivokeypass.DatabaseInfo;
 
 public class Keepass2Android implements KeePassApp {
 	public static final String PACKAGE_NAME = "keepass2android.keepass2android";

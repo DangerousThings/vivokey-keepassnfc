@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 public class CryptoFailedException extends Exception
 {

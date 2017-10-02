@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;

@@ -25,7 +25,7 @@
  * For more information, please refer to [http://unlicense.org]
  */
 
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 public class Settings {
 	public static final String nfcinfo_filename_template = "nfcinfo";

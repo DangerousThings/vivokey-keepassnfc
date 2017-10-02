@@ -25,7 +25,7 @@
  * For more information, please refer to [http://unlicense.org]
  */
 
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,7 +44,7 @@ import android.provider.DocumentsContract;
 import android.util.Log;
 import android.content.Context;
 
-import net.lardcave.keepassnfc.keepassapp.KeePassApps;
+import com.vivokey.vivokeypass.keepassapp.KeePassApps;
 
 /* Represents the on-disk database info including encrypted password */
 

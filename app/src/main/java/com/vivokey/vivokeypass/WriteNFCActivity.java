@@ -25,7 +25,7 @@
  * For more information, please refer to [http://unlicense.org]
  */
 
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import java.io.IOException;
 
@@ -40,14 +40,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 
-import net.lardcave.keepassnfc.nfccomms.KPApplet;
-import net.lardcave.keepassnfc.nfccomms.KPNdef;
+import com.vivokey.vivokeypass.nfccomms.KPApplet;
+import com.vivokey.vivokeypass.nfccomms.KPNdef;
 
 public class WriteNFCActivity extends Activity {
     private static final String LOG_TAG = "WriteNFCActivity";
 
 	private byte[] randomBytes; // Key
-	private boolean writeNdefToSmartcard;
+	private static boolean writeNdefToSmartcard = false;
 
 	private static class WriteTagResult {
 		boolean ndefWritten;
@@ -130,6 +130,10 @@ public class WriteNFCActivity extends Activity {
             @Override
             public void onClick(View self) {
                 NfcReadActions.nfc_disable(WriteNFCActivity.this);
+	            Intent resultIntent = new Intent();
+	            resultIntent.putExtra("randomBytes", randomBytes);
+
+	            setResult(0, resultIntent);
                 finish();
             }
         });
@@ -148,6 +152,7 @@ public class WriteNFCActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
+	    ((CheckBox)findViewById(R.id.cbWriteNDEF)).setChecked(writeNdefToSmartcard);
         NfcReadActions.nfc_enable(this);
     }
 
@@ -155,6 +160,7 @@ public class WriteNFCActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
+	    writeNdefToSmartcard = ((CheckBox)findViewById(R.id.cbWriteNDEF)).isChecked();
         NfcReadActions.nfc_disable(this);
     }
 

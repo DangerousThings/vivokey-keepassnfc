@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="net.lardcave.keepassnfc"
+          package="com.vivokey.vivokeypass"
           android:versionCode="5"
           android:versionName="1.4">
 
@@ -19,18 +19,18 @@
 		android:label="@string/app_name"
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme">
-		<activity android:name=".MainActivity">
+		<activity android:name="com.vivokey.vivokeypass.MainActivity">
 		</activity>
 		<activity
-			android:name=".WriteNFCActivity"
+			android:name="com.vivokey.vivokeypass.WriteNFCActivity"
 			android:label="@string/app_name"
 			android:screenOrientation="portrait">
 			<intent-filter>
-				<action android:name="net.lardcave.keepassnfc.WRITE_NFC_ACTION"/>
+				<action android:name="com.vivokey.vivokeypass.WRITE_NFC_ACTION"/>
 			</intent-filter>
 		</activity>
 		<activity
-			android:name=".ReadActivity"
+			android:name="com.vivokey.vivokeypass.ReadActivity"
 			android:icon="@mipmap/ic_launcher"
 			android:screenOrientation="portrait">
 			<intent-filter>
@@ -42,13 +42,13 @@
 			</intent-filter>
 		</activity>
 		<activity
-			android:name=".NoKeepassActivity"
+			android:name="com.vivokey.vivokeypass.NoKeepassActivity"
 			android:label="@string/title_activity_no_keepass"
 			android:theme="@style/AppTheme.NoActionBar"
 			android:screenOrientation="portrait">
 		</activity>
 		<activity
-			android:name=".PrepareNewTagActivity"
+			android:name="com.vivokey.vivokeypass.PrepareNewTagActivity"
 			android:label="VivoKeyPass"
 			android:theme="@style/AppTheme.NoActionBar"
 			android:screenOrientation="portrait">

@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -8,12 +8,11 @@ import android.content.IntentFilter;
 import android.nfc.NfcAdapter;
 import android.nfc.tech.IsoDep;
 import android.nfc.tech.NfcF;
-import android.util.Log;
 
-import net.lardcave.keepassnfc.keepassapp.KeePassApp;
-import net.lardcave.keepassnfc.keepassapp.KeePassApps;
-import net.lardcave.keepassnfc.nfccomms.KPApplet;
-import net.lardcave.keepassnfc.nfccomms.KPNdef;
+import com.vivokey.vivokeypass.keepassapp.KeePassApp;
+import com.vivokey.vivokeypass.keepassapp.KeePassApps;
+import com.vivokey.vivokeypass.nfccomms.KPApplet;
+import com.vivokey.vivokeypass.nfccomms.KPNdef;
 
 import java.io.IOException;
 

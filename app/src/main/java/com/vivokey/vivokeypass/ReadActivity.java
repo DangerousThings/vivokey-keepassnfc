@@ -25,28 +25,11 @@
  * For more information, please refer to [http://unlicense.org]
  */
 
-package net.lardcave.keepassnfc;
+package com.vivokey.vivokeypass;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipDescription;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.nfc.NfcAdapter;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
-
-import net.lardcave.keepassnfc.keepassapp.KeePassApp;
-import net.lardcave.keepassnfc.keepassapp.KeePassApps;
-import net.lardcave.keepassnfc.nfccomms.KPApplet;
-import net.lardcave.keepassnfc.nfccomms.KPNdef;
-
-import java.io.IOException;
 
 public class ReadActivity extends Activity {
 	private static final String LOG_TAG = "KPNFC Read";

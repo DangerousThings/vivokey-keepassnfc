@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc.nfccomms;
+package com.vivokey.vivokeypass.nfccomms;
 
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -9,7 +9,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Parcelable;
 
-import net.lardcave.keepassnfc.Settings;
+import com.vivokey.vivokeypass.Settings;
 
 import java.io.IOException;
 import java.util.Arrays;

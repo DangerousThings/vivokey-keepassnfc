@@ -1,4 +1,4 @@
-package net.lardcave.keepassnfc.nfccomms;
+package com.vivokey.vivokeypass.nfccomms;
 
 import android.content.Intent;
 import android.content.IntentFilter;

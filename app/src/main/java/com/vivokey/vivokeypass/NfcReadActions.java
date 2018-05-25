@@ -21,7 +21,10 @@ class NfcReadActions {
 		Error(String message) {
 			super(message);
 		}
+	}
 
+	static class WrongPinError extends Error {
+		WrongPinError(String message) { super(message); }
 	}
 
 	static IntentFilter[] getFilters() {
@@ -39,35 +42,41 @@ class NfcReadActions {
 		// Register for any NFC event (only while we're in the foreground)
 
 		NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-		PendingIntent pending_intent = PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		if(adapter != null) {
+			PendingIntent pending_intent = PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
-		adapter.enableForegroundDispatch(activity, pending_intent, getFilters(), getTechLists());
+			adapter.enableForegroundDispatch(activity, pending_intent, getFilters(), getTechLists());
+		}
 	}
 
 	static void nfc_disable(Activity activity)
 	{
 		NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-
-		adapter.disableForegroundDispatch(activity);
+		if(adapter != null) {
+			adapter.disableForegroundDispatch(activity);
+		}
 	}
 
 	private static void decryptUsingApplet(Intent intent, DatabaseInfo dbinfo) throws Error {
 		KPApplet applet = new KPApplet();
 		byte[] decrypted_bytes = null;
 		try {
-			decrypted_bytes = applet.decrypt(intent, dbinfo.encrypted_password);
+			decrypted_bytes = applet.getSecretData(intent, dbinfo.pin.getBytes());
 		} catch (IOException e) {
 			throw new Error("Card communication failed.");
+		} catch (KPApplet.WrongPinError e) {
+			throw new WrongPinError("Wrong PIN");
 		}
 
 		if (decrypted_bytes != null) {
 			dbinfo.set_decrypted_password(decrypted_bytes);
+		} else {
+			throw new Error("Couldn't decrypt -- too many failed PIN attempts?");
 		}
 	}
 
-	static DatabaseInfo getDbInfoFromIntent(Context ctx, Intent intent) throws Error {
+	static DatabaseInfo decryptDbInfoFromIntent(Context ctx, Intent intent, DatabaseInfo dbinfo) throws Error {
 		KPNdef ndef = null;
-		DatabaseInfo dbinfo = DatabaseInfo.deserialise(ctx);
 
 		if(dbinfo == null) {
 			throw new Error("VivoKey KeePass applet not configured!");
@@ -80,12 +89,8 @@ class NfcReadActions {
 			if (ndef.readWasSuccessful()) {
 				byte[] secretKey = ndef.getSecretKey();
 				if (secretKey != null) {
-				/* NDEF message contained the decryption key -- don't use applet. */
-					try {
-						dbinfo.decrypt_password(secretKey);
-					} catch (CryptoFailedException e) {
-						throw new Error("Couldn't decrypt data. Re-do key?");
-					}
+				/* NDEF message contained the decryption key -- don't use applet (not supported atm) */
+					throw new Error("Plain NDEF unsupported");
 				} else {
 				/* NDEF message was just to get us foregrounded -- try to decrypt using applet. */
 					decryptUsingApplet(intent, dbinfo);

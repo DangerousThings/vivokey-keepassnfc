@@ -27,7 +27,6 @@
 
 package com.vivokey.vivokeypass;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +36,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -53,10 +53,6 @@ import com.vivokey.vivokeypass.keepassapp.KeePassApps;
 
 import static android.view.View.VISIBLE;
 
-
-/* Probably want this to have foreground NFC-everything, so that people can scan a fob and then press the button?
- * Does that even work?
- */
 public class PrepareNewTagActivity extends Activity {
 	private class StringWithId {
 		private String value, id;
@@ -70,31 +66,24 @@ public class PrepareNewTagActivity extends Activity {
 	private static final int REQUEST_KEYFILE = 0;
 	private static final int REQUEST_DATABASE = 1;
     private static final int REQUEST_NFC_WRITE = 2;
+    private static final int REQUEST_PIN_CONFIGURATION = 3;
 	private static final Uri whatIsKPNFCUrl = Uri.parse("http://vivokey.co/vivokeypass");
-	private Uri keyfile = null;
-	private Uri database = null;
 
-	private String selectedAppId = null;
 	private List<StringWithId> availableAppNames = new ArrayList<>();
+	private DatabaseInfo dbinfo = null;
 
 	@Override
 	protected void onCreate(Bundle sis) {
 		super.onCreate(sis);
 		setContentView(R.layout.activity_configure);
-		
-		if (sis != null) {
-			String keyfile_string = sis.getString("keyfile");
-
-			if (keyfile_string != null && keyfile_string.compareTo("") != 0)
-				keyfile = Uri.parse(keyfile_string);
-			else
-				keyfile = null;
-		}
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		/* Reload DB info and populate view. */
+		dbinfo = DatabaseInfo.deserialise(this);
 
 		/* Populate the list of available apps */
 		availableAppNames.clear();
@@ -126,12 +115,8 @@ public class PrepareNewTagActivity extends Activity {
 	@Override
 	protected void onSaveInstanceState(Bundle sis)
 	{
+		// We save state immediately after modification, so nothing to do here.
 	    super.onSaveInstanceState(sis);
-	    if (keyfile == null)
-	    	sis.putString("keyfile", "");
-	    else
-	    	sis.putString("keyfile", keyfile.toString());
-
 	}
 
 	private void openPicker(int result) {
@@ -148,14 +133,16 @@ public class PrepareNewTagActivity extends Activity {
 	private void initialiseView()
 	{
 		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-		findViewById(R.id.b_noKeyfile).setVisibility(keyfile == null ? View.INVISIBLE : VISIBLE);
 
+		Uri keyfile = dbinfo.keyfile;
+		findViewById(R.id.b_noKeyfile).setVisibility(keyfile == null ? View.INVISIBLE : VISIBLE);
 		if(keyfile == null) {
 			((TextView) (findViewById(R.id.keyfile_name))).setText(R.string.no_keyfile_selected);
 		} else {
 			((TextView) (findViewById(R.id.keyfile_name))).setText(getUriFilename(keyfile));
 		}
 
+		Uri database = dbinfo.database;
 		if(database == null) {
 			((TextView) (findViewById(R.id.database_name))).setText(R.string.no_db_selected);
 		} else {
@@ -167,7 +154,7 @@ public class PrepareNewTagActivity extends Activity {
 			@Override
 			public void onClick(View self) {
 				self.setEnabled(false);
-				switchToWriteNfcActivity(getRandomBytes());
+				switchToWriteNfcActivity();
 			}
 		});
 		setWriteNfcButtonEnabled();
@@ -190,8 +177,16 @@ public class PrepareNewTagActivity extends Activity {
 			@Override
 			public void onClick(View view) {
 				((TextView)findViewById(R.id.keyfile_name)).setText(R.string.no_keyfile_selected);
-				keyfile = null;
+				dbinfo.keyfile = null;
+				storeDbInfo();
 				view.setVisibility(View.INVISIBLE);
+			}
+		});
+
+		findViewById(R.id.rl_pin).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onPinClick();
 			}
 		});
 
@@ -202,6 +197,13 @@ public class PrepareNewTagActivity extends Activity {
 				startActivity(intent);
 			}
 		});
+
+		TextView tv = (TextView)findViewById(R.id.pin_status);
+		if(dbinfo.pin != null && dbinfo.pin.length() > 0) {
+			tv.setText(R.string.pin_configured);
+		} else {
+			tv.setText(R.string.no_pin_entered);
+		}
 
 		// Only allow NFC writing if a password has been set.
 		((EditText)findViewById(R.id.password)).addTextChangedListener(new TextWatcher() {
@@ -238,12 +240,14 @@ public class PrepareNewTagActivity extends Activity {
 			@Override
 			public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 				StringWithId selected = (StringWithId)adapterView.getItemAtPosition(i);
-				selectedAppId = selected.id;
+				dbinfo.keepassAppId = selected.id;
+				storeDbInfo();
 			}
 
 			@Override
 			public void onNothingSelected(AdapterView<?> adapterView) {
-				selectedAppId = null;
+				dbinfo.keepassAppId = null;
+				storeDbInfo();
 			}
 		});
 
@@ -274,12 +278,13 @@ public class PrepareNewTagActivity extends Activity {
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    switch (requestCode) {
+		switch (requestCode) {
 	    case REQUEST_KEYFILE:  
-	        if (resultCode == RESULT_OK) {  
+	        if (resultCode == RESULT_OK) {
 	            // The URI of the selected file 
-	            keyfile = data.getData();
-		        ((TextView)findViewById(R.id.keyfile_name)).setText(getUriFilename(keyfile));
+	            dbinfo.keyfile = data.getData();
+	            storeDbInfo();
+		        ((TextView)findViewById(R.id.keyfile_name)).setText(getUriFilename(dbinfo.keyfile));
 		        findViewById(R.id.b_noKeyfile).setVisibility(VISIBLE);
 	        } else {
 				System.err.println("REQUEST_KEYFILE result code " + resultCode);
@@ -287,8 +292,9 @@ public class PrepareNewTagActivity extends Activity {
 	        break;
 	    case REQUEST_DATABASE:
 	    	if (resultCode == RESULT_OK) {
-	    		database = data.getData();
-			    ((TextView)findViewById(R.id.database_name)).setText(getUriFilename(database));
+	    		dbinfo.database = data.getData();
+	    		storeDbInfo();
+			    ((TextView)findViewById(R.id.database_name)).setText(getUriFilename(dbinfo.database));
 	    	} else {
 				System.err.println("REQUEST_DATABASE result code " + resultCode);
 			}
@@ -297,34 +303,41 @@ public class PrepareNewTagActivity extends Activity {
         case REQUEST_NFC_WRITE:
             // Re-enable NFC writing.
 
-	        if(resultCode != 1) {
-		        Toast.makeText(getApplicationContext(), "Couldn't update!", Toast.LENGTH_SHORT).show();
-		        break;
+	        switch(resultCode) {
+		        case WriteNFCActivity.SUCCEEDED: {
+			        Button nfc_write = (Button) findViewById(R.id.write_nfc);
+			        nfc_write.setEnabled(true);
+
+			        if (storeDbInfo()) {
+				        // Job well done! Let's have some toast.
+				        Toast.makeText(getApplicationContext(), "Written successfully!", Toast.LENGTH_SHORT).show();
+			        } else {
+				        Toast.makeText(getApplicationContext(), "Error writing to application database!", Toast.LENGTH_SHORT).show();
+			        }
+		        	break;
+		        }
+		        case WriteNFCActivity.WRONG_PIN: {
+		        	// TODO this could be nicer.
+			        Toast.makeText(getApplicationContext(), "Wrong PIN entered!", Toast.LENGTH_SHORT).show();
+		        	break;
+		        }
+		        case WriteNFCActivity.NFC_ERROR: {
+			        // Couldn't communicate with card.
+			        Toast.makeText(getApplicationContext(), "Couldn't update!", Toast.LENGTH_SHORT).show();
+			        break;
+		        }
 	        }
-
-            Button nfc_write = (Button) findViewById(R.id.write_nfc);
-            nfc_write.setEnabled(true);
-
-			byte[] random_bytes = null;
-
-			if(data != null)
-				random_bytes = data.getExtras().getByteArray("randomBytes");
-
-            if (resultCode == 1) {
-                if (random_bytes != null && encrypt_and_store(random_bytes)) {
-                    // Job well done! Let's have some toast.
-                    Toast.makeText(getApplicationContext(), "Written successfully!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Error writing to application database!", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                // can't think of a good toast analogy for fail
-                Toast.makeText(getApplicationContext(), "Couldn't update. :(", Toast.LENGTH_SHORT).show();
-            }
-
-            /* Erase password after write. */
-	        ((EditText)findViewById(R.id.password)).setText("");
-        }
+	        break;
+		case REQUEST_PIN_CONFIGURATION:
+			// User has configured a PIN and a previous PIN
+			if(resultCode == RESULT_OK) {
+				dbinfo.pin = data.getStringExtra("pin");
+				dbinfo.previousPin = data.getStringExtra("previousPin");
+				storeDbInfo();
+				Toast.makeText(this, "PIN updated.", Toast.LENGTH_SHORT).show();
+			}
+			break;
+		}
 	}
 
 	private void setWriteNfcButtonEnabled()
@@ -332,76 +345,55 @@ public class PrepareNewTagActivity extends Activity {
 		Button b = (Button) findViewById(R.id.write_nfc);
 		String password = ((EditText)findViewById(R.id.password)).getText().toString();
 
-		b.setEnabled(database != null && password.length() > 0);
+		b.setEnabled(dbinfo.database != null && password.length() > 0);
 	}
 
-	private byte[] getRandomBytes()
+	protected boolean storeDbInfo()
 	{
-		byte[] random_bytes = new byte[Settings.key_length];
-		SecureRandom rng = new SecureRandom();		
-		rng.nextBytes(random_bytes);
-
-		return random_bytes;
-	}
-	
-	private boolean encrypt_and_store(byte[] random_bytes)
-	{	
-		DatabaseInfo dbinfo;
-		int config;
-		String password;
-		
-		if (database == null) {
-			Toast.makeText(this, "Please select a database first", Toast.LENGTH_SHORT).show();
-			return false;
-		}
-
-		if (selectedAppId == null) {
-			Toast.makeText(this, "Please select an app first", Toast.LENGTH_SHORT).show();
-		}
-
-		config = DatabaseInfo.CONFIG_NOTHING; // TODO "start immediately"
-		EditText et_password = (EditText) findViewById(R.id.password);
-		password = et_password.getText().toString();
-
-		dbinfo = new DatabaseInfo(database, keyfile, password, config, selectedAppId);
+		dbinfo.config = DatabaseInfo.CONFIG_NOTHING; // TODO "start immediately"
 
 		dbinfo.retainOrUpdateUriAccess(getApplicationContext());
-
-		try {
-			return dbinfo.serialise(this, random_bytes);
-		} catch (CryptoFailedException e) {
-			Toast.makeText(getApplicationContext(), "Couldn't encrypt data :(", Toast.LENGTH_SHORT).show();
-			return false;
-		}
+		return dbinfo.serialise(this);
 	}
 
-	protected void switchToWriteNfcActivity(byte[] randomBytes)
+	protected void switchToWriteNfcActivity()
 	{
-		Intent intent = new Intent(getApplicationContext(), WriteNFCActivity.class);
-		intent.putExtra("randomBytes", randomBytes);
-		startActivityForResult(intent, REQUEST_NFC_WRITE);
-	}
+		EditText et_password = (EditText) findViewById(R.id.password);
+		String password = et_password.getText().toString();
 
-	protected void switchToMainActivity() {
-		Intent intent = new Intent(this, MainActivity.class);
-		startActivity(intent);
-		finish();
+		Intent intent = new Intent(getApplicationContext(), WriteNFCActivity.class);
+		intent.putExtra("password", password.getBytes());
+		startActivityForResult(intent, REQUEST_NFC_WRITE);
 	}
 
 	@Override
 	public void onNewIntent(Intent intent) {
-		DatabaseInfo dbinfo = null;
+		dbinfo = DatabaseInfo.deserialise(this);
+		boolean startKeepass = true;
 
 		try {
-			dbinfo = NfcReadActions.getDbInfoFromIntent(this, intent);
+			NfcReadActions.decryptDbInfoFromIntent(this, intent, dbinfo);
+		} catch(NfcReadActions.WrongPinError error) {
+			// Wrong PIN
+			startKeepass = false;
+			Toast.makeText(this, "!!!" + error.getMessage(), Toast.LENGTH_SHORT).show();
+			//switchToPinRequestActivity(REQUEST_PIN_FOR_READ);
 		} catch (NfcReadActions.Error error) {
 			Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+			startKeepass = false;
 		}
 
-		if(dbinfo != null) {
+		if(startKeepass) {
 			NfcReadActions.startKeepassActivity(this, dbinfo);
 		}
 	}
 
+	protected void onPinClick()
+	{
+		Intent intent = new Intent(getApplicationContext(), PinActivity.class);
+		intent.putExtra("pin", dbinfo.pin);
+		intent.putExtra("previousPin", dbinfo.previousPin);
+		startActivityForResult(intent, REQUEST_PIN_CONFIGURATION);
+	}
 
 }

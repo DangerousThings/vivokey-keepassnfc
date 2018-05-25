@@ -31,7 +31,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.SecureRandom;
+
 import javax.crypto.spec.SecretKeySpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.Cipher;
@@ -53,35 +53,28 @@ public class DatabaseInfo {
 	public static final int CONFIG_PASSWORD_ASK = 1;
 	public static final int CONFIG_DBVERSION_EXTENDED = 0x80; // Indicates newer DB version with more fields
 
-	private static final int DB_VERSION_2 = 2;
+	// Version 4: add previousPin.
+	private static final int DB_VERSION = 4;
 
 	public Uri database;
 	public Uri keyfile;
+	public String pin;
+	public String previousPin;
 	public String password;
-	byte[] encrypted_password;
-	private String keepassAppId;
+	public String keepassAppId;
 
 	public int config;
 
 	private static final String CIPHER = "AES/CBC/NoPadding";
     private static final String LOG_TAG = "keepassnfc";
 	
-	DatabaseInfo(Uri database, Uri keyfile, String password, int config, String keepassAppId)
+	private DatabaseInfo(Uri database, Uri keyfile, String password, String pin, String previousPin, int config, String keepassAppId)
 	{
 		this.database = database;
 		this.keyfile = keyfile;
 		this.password = password;
-		this.encrypted_password = new byte[Settings.max_password_length];
-		this.config = config;
-		this.keepassAppId = keepassAppId;
-	}
-
-	private DatabaseInfo(Uri database, Uri keyfile, byte[] encrypted_password, int config, String keepassAppId)
-	{
-		this.database = database;
-		this.keyfile = keyfile;
-		this.password = null;
-		this.encrypted_password = encrypted_password;
+		this.pin = pin;
+		this.previousPin = previousPin;
 		this.config = config;
 		this.keepassAppId = keepassAppId;
 	}
@@ -117,6 +110,7 @@ public class DatabaseInfo {
 		}
 	}
 
+	/*
 	private byte[] encrypt_password(byte[] key) throws CryptoFailedException
 	{
 		int i;
@@ -145,13 +139,14 @@ public class DatabaseInfo {
 			throw new CryptoFailedException();
 		}
 	}
+	*/
 
 	String set_decrypted_password(byte[] decrypted_bytes) {
-		int length = (int)decrypted_bytes[0];
-		password = new String(decrypted_bytes, 1, length);
+		password = new String(decrypted_bytes, 0, decrypted_bytes.length);
 		return password;
 	}
-	
+
+	/*
 	String decrypt_password(byte[] key) throws CryptoFailedException
 	{
 		byte[] decrypted;
@@ -169,21 +164,7 @@ public class DatabaseInfo {
 
 		return set_decrypted_password(decrypted);
 	}
-	
-	private byte[] to_short(short i)
-	{
-		byte[] bytes = new byte[2];
-		short[] shorts = {i};
-
-		ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(shorts);
-
-		return bytes;
-	}
-
-	private byte[] to_short(int i)
-	{
-		return to_short((short)i);
-	}
+	*/
 	
 	// Persist access to the file.
 	private void persistAccessToFile(Context ctx, Uri uri) {
@@ -204,43 +185,27 @@ public class DatabaseInfo {
 			persistAccessToFile(ctx, keyfile);
 	}
 
-	boolean serialise(Context ctx, byte[] key) throws CryptoFailedException
+	boolean serialise(Context ctx)
 	{
-		/* Encrypt the configuration (database, password, key location) and store it on the Android device.
-		 *
-		 * The encryption key is stored on the NFC tag.
-		*/
-		encrypted_password = encrypt_password(key);
-
+		/* Store the configuration on the Android device.  */
 		FileOutputStream configuration;
+
 		try {
 			configuration = ctx.openFileOutput(Settings.nfcinfo_filename_template + "_00.txt", Context.MODE_PRIVATE);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return false;
 		}
+
 		try {
-			String uriString;
-
 			configuration.write(config | CONFIG_DBVERSION_EXTENDED);
+			write_string(configuration, database == null ? "" : database.toString());
+			write_string(configuration, keyfile == null ? "" : keyfile.toString());
+			configuration.write(DB_VERSION);
+			write_string(configuration, keepassAppId);
+			write_string(configuration, pin == null ? "" : pin);
+			write_string(configuration, previousPin == null ? "" : previousPin);
 
-			uriString = database.toString();
-			configuration.write(to_short(uriString.length()));
-			configuration.write(uriString.getBytes());
-
-			if (keyfile == null) {
-				configuration.write(to_short(0));
-			} else {
-				uriString = keyfile.toString();
-				configuration.write(to_short(uriString.length()));
-				configuration.write(uriString.getBytes());
-			}
-
-			configuration.write(to_short(encrypted_password.length));
-			configuration.write(encrypted_password);
-			configuration.write(DB_VERSION_2);
-			configuration.write(to_short(keepassAppId.length()));
-			configuration.write(keepassAppId.getBytes());
 			configuration.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -249,14 +214,12 @@ public class DatabaseInfo {
 
 		return true;
 	}
-	
+
 	static DatabaseInfo deserialise(Context ctx)
 	{
 		int config;
 		String keepassAppId = KeePassApps.getDefaultApp().getId();
-		String databaseString, keyfileString;
-		byte[] buffer = new byte[1024];
-		byte[] encrypted_password = new byte[Settings.max_password_length];
+		String databaseString, keyfileString, pinString = null, previousPinString = null;
 
 		FileInputStream nfcinfo;
 
@@ -264,35 +227,41 @@ public class DatabaseInfo {
 			nfcinfo = ctx.openFileInput(Settings.nfcinfo_filename_template + "_00.txt");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-			return null;
+			return getDefaultConfig();
 		}
 		
 		try {
 			config = nfcinfo.read();
 			boolean extended_db_info = ((config & CONFIG_DBVERSION_EXTENDED) != 0);
 
-			databaseString = read_string(nfcinfo, buffer);
-			keyfileString = read_string(nfcinfo, buffer);
-			read_bytes(nfcinfo, encrypted_password);
+			databaseString = read_string(nfcinfo);
+			keyfileString = read_string(nfcinfo);
 
 			if(extended_db_info) {
 				int version = nfcinfo.read();
-				if(version == DB_VERSION_2) {
-					keepassAppId = read_string(nfcinfo, buffer);
-				} else {
+				if(version != DB_VERSION) {
 					Log.e(LOG_TAG, "Unknown database version");
+					return getDefaultConfig();
 				}
+				keepassAppId = read_string(nfcinfo);
+				pinString = read_string(nfcinfo);
+				previousPinString = read_string(nfcinfo);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
+			return getDefaultConfig();
 		}
 
-		Uri database = Uri.parse(databaseString);
+		Uri database = databaseString.equals("") ? null: Uri.parse(databaseString);
 		Uri keyfile = keyfileString.equals("") ? null: Uri.parse(keyfileString);
 		
-		DatabaseInfo dbInfo = new DatabaseInfo(database, keyfile, encrypted_password, config, keepassAppId);
-		return dbInfo;
+		return new DatabaseInfo(database, keyfile, null, pinString, previousPinString, config, keepassAppId);
+	}
+
+	static DatabaseInfo getDefaultConfig()
+	{
+		return new DatabaseInfo(null, null, null, null, null, CONFIG_NOTHING, null);
+
 	}
 
 	private static short read_short(FileInputStream fis) throws IOException
@@ -307,22 +276,44 @@ public class DatabaseInfo {
 		return shorts[0];
 	}
 
-	private static int read_bytes(FileInputStream fis, byte[] buffer) throws IOException
+	private static byte[] read_bytes(FileInputStream fis) throws IOException
 	{
 		int length = read_short(fis);
-		
+
+		byte[] buffer = new byte[length];
 		int actual_length = fis.read(buffer, 0, length);
 
         if(actual_length != length) {
             throw new IOException("read_bytes: couldn't read desired length");
         }
 
-		return length;		
+		return buffer;
 	}
 	
-	private static String read_string(FileInputStream fis, byte[] buffer) throws IOException
+	private static String read_string(FileInputStream fis) throws IOException
 	{
-		int length = read_bytes(fis, buffer);
-		return new String(buffer, 0, length);
+		byte[] stringBytes = read_bytes(fis);
+		return new String(stringBytes, 0, stringBytes.length);
 	}
+
+	private static void write_string(FileOutputStream stream, String s) throws IOException {
+		stream.write(to_short(s.length()));
+		stream.write(s.getBytes());
+	}
+
+	private static byte[] to_short(int i)
+	{
+		return to_short((short)i);
+	}
+
+	private static byte[] to_short(short i)
+	{
+		byte[] bytes = new byte[2];
+		short[] shorts = {i};
+
+		ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(shorts);
+
+		return bytes;
+	}
+
 }

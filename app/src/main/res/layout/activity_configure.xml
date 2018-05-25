@@ -25,8 +25,8 @@
 		>
 		<ImageView
 			android:id="@+id/ivDatabase"
-			android:layout_width="80dp"
-			android:layout_height="80dp"
+			android:layout_width="70dp"
+			android:layout_height="70dp"
 		    android:src="@drawable/button_database"
 			/>
 
@@ -37,9 +37,11 @@
 			android:layout_centerVertical="true"
 			android:layout_toEndOf="@+id/ivDatabase"
 			android:lines="1"
-			android:gravity="center"
+			android:gravity="start"
+			android:layout_marginLeft="5dp"
 			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-			/>
+			android:text="@string/no_db_selected"
+			tools:ignore="RtlHardcoded"/>
 
 	</RelativeLayout>
 
@@ -54,15 +56,15 @@
 
 		<ImageView
 			android:id="@+id/ivKeyFile"
-			android:layout_width="80dp"
-			android:layout_height="80dp"
+			android:layout_width="70dp"
+			android:layout_height="70dp"
 			android:src="@drawable/button_keyfile"
 			/>
 
 		<RelativeLayout
 			android:id="@+id/rl_keyfile_internal"
 			android:layout_width="match_parent"
-			android:layout_height="80dp"
+			android:layout_height="70dp"
 			android:layout_toEndOf="@+id/ivKeyFile">
 
 			<TextView
@@ -72,9 +74,11 @@
 				android:layout_height="wrap_content"
 				android:layout_centerVertical="true"
 				android:lines="1"
-				android:gravity="center"
+				android:layout_marginLeft="5dp"
+				android:gravity="start"
 				android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-				/>
+				android:text="@string/no_keyfile_selected"
+				tools:ignore="RtlHardcoded"/>
 
 			<ImageButton
 				android:id="@+id/b_noKeyfile"
@@ -85,7 +89,7 @@
 				android:adjustViewBounds="false"
 				android:background="@drawable/x_drawable"
 				android:visibility="visible"
-				android:contentDescription="Clear keyfile"/>
+				android:contentDescription="@string/clear_keyfile"/>
 		</RelativeLayout>
 
 	</RelativeLayout>
@@ -102,8 +106,8 @@
 
 		<ImageView
 			android:id="@+id/ivPassword"
-			android:layout_width="80dp"
-			android:layout_height="80dp"
+			android:layout_width="70dp"
+			android:layout_height="70dp"
 			android:src="@drawable/button_password"
 			/>
 
@@ -114,10 +118,42 @@
 	        android:layout_height="wrap_content"
 	        android:layout_centerVertical="true"
 	        android:layout_toEndOf="@+id/ivPassword"
+	        android:layout_marginLeft="2dp"
+	        android:hint="@string/password_hint_text"
 	        android:inputType="textPassword"
-	         >
+	        tools:ignore="RtlHardcoded">
 	    </EditText>
 
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:id="@+id/rl_pin"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="36dp"
+		android:layout_below="@+id/rl_password"
+		android:paddingTop="5dp"
+		>
+
+		<ImageView
+			android:id="@+id/ivPin"
+			android:layout_width="70dp"
+			android:layout_height="70dp"
+			android:src="@drawable/pin"
+			/>
+
+		<TextView
+			android:id="@+id/pin_status"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_toEndOf="@+id/ivPin"
+			android:lines="1"
+			android:gravity="start"
+			android:layout_marginLeft="5dp"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+			android:text="@string/no_pin_entered"
+			tools:ignore="RtlHardcoded"/>
 	</RelativeLayout>
 
 	<RelativeLayout
@@ -125,7 +161,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginLeft="36dp"
-		android:layout_below="@+id/rl_password"
+		android:layout_below="@+id/rl_pin"
 		android:paddingTop="5dp"
 		>
 

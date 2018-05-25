@@ -28,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public void onNewIntent(Intent intent) {
-		DatabaseInfo dbinfo = null;
+		DatabaseInfo dbinfo = DatabaseInfo.deserialise(this);
 
 		try {
-			dbinfo = NfcReadActions.getDbInfoFromIntent(this, intent);
+			dbinfo = NfcReadActions.decryptDbInfoFromIntent(this, intent, dbinfo);
 		} catch (NfcReadActions.Error error) {
 			Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
 		}

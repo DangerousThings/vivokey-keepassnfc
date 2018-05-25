@@ -2,5 +2,16 @@
 	<string name="app_name">VivoKeyPass</string>
 	<string name="title_activity_no_keepass">NoKeepassActivity</string>
 	<string name="no_db_selected">No database selected</string>
+	<string name="cancel">Cancel</string>
+	<string name="text_continue">Continue</string>
+	<string name="password_hint_text">Password</string>
 	<string name="no_keyfile_selected">No keyfile selected</string>
+	<string name="clear_keyfile">Clear keyfile</string>
+	<string name="no_pin_entered">No PIN entered</string>
+	<string name="pin_configured">PIN configured</string>
+	<string name="configure_your_pin">Configure your PIN</string>
+	<string name="pin_intro_blurb">Using a VivoKey-checked PIN provides a balance between password-free access and security.</string>
+	<string name="enter_your_current_pin_if_set">Enter your current PIN if one is set</string>
+	<string name="current_pin">Current PIN</string>
+	<string name="enter_your_new_pin">Enter your new PIN</string>
 </resources>

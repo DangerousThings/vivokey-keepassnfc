@@ -1,0 +1,151 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" >
+
+	<ImageView
+		android:id="@+id/vivoLogo"
+		android:layout_width="wrap_content"
+		android:layout_height="120dp"
+		android:layout_alignParentTop="true"
+		android:src="@drawable/logo_with_keepass"
+		app:srcCompat="@drawable/logo_with_keepass"
+		android:layout_alignParentEnd="true"/>
+
+	<RelativeLayout
+		android:id="@+id/rl_pin_intro"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="5dp"
+		android:layout_marginEnd="5dp"
+		android:layout_below="@+id/vivoLogo"
+		android:paddingTop="10dp"
+		>
+
+		<TextView
+			android:id="@+id/tv_pinprompt"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/configure_your_pin"
+			android:textAlignment="center"
+			android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+
+		<TextView
+			android:id="@+id/tv_pinintro"
+			android:paddingTop="12dp"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/pin_intro_blurb"
+			android:textAlignment="center"
+			android:layout_below="@id/tv_pinprompt"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:id="@+id/rl_current_pin"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="5dp"
+		android:layout_marginEnd="5dp"
+		android:layout_below="@+id/rl_pin_intro"
+		android:paddingTop="36dp"
+		>
+
+		<TextView
+			android:id="@+id/tv_current_pin"
+			android:layout_width="100dp"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:text="@string/current_pin"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+
+		<EditText
+			android:id="@+id/et_current_pin"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_toRightOf="@+id/tv_current_pin"
+			android:inputType="numberPassword"
+			>
+		</EditText>
+
+		<TextView
+			android:id="@+id/tv_current_pin_explanation"
+			android:layout_alignLeft="@id/et_current_pin"
+			android:layout_below="@id/et_current_pin"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+			android:text="@string/enter_your_current_pin_if_set"/>
+	</RelativeLayout>
+
+	<RelativeLayout
+		android:id="@+id/rl_new_pin"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginStart="5dp"
+		android:layout_marginEnd="5dp"
+		android:layout_below="@+id/rl_current_pin"
+		android:paddingTop="36dp"
+		>
+
+		<TextView
+			android:id="@+id/tv_new_pin"
+			android:layout_width="100dp"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:text="New PIN"
+			android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+
+		<EditText
+			android:id="@+id/et_new_pin"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_centerVertical="true"
+			android:layout_toRightOf="@+id/tv_new_pin"
+			android:inputType="numberPassword"
+			>
+		</EditText>
+
+		<TextView
+			android:id="@+id/tv_new_pin_explanation"
+			android:layout_alignLeft="@id/et_new_pin"
+			android:layout_below="@id/et_new_pin"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+			android:text="@string/enter_your_new_pin"/>
+	</RelativeLayout>
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentBottom="true"
+		>
+
+		<Button
+			android:id="@+id/b_continue"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+
+			android:text="@string/text_continue"
+			android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button"
+			android:layout_marginBottom="5dp"
+			/>
+
+		<Button
+			android:id="@+id/b_cancel"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+
+			android:text="@string/cancel"
+			android:textAppearance="@style/TextAppearance.AppCompat.Widget.Button"
+			android:layout_marginBottom="5dp"
+			android:layout_marginStart="10dp"
+			android:layout_marginEnd="5dp"
+			/>
+
+	</LinearLayout>
+</RelativeLayout>

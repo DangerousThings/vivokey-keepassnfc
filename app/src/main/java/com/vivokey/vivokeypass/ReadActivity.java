@@ -39,10 +39,10 @@ public class ReadActivity extends Activity {
 	{
 		super.onCreate(savedInstanceState);
 
-		DatabaseInfo dbinfo = null;
+		DatabaseInfo dbinfo = DatabaseInfo.deserialise(this);
 
 		try {
-			dbinfo = NfcReadActions.getDbInfoFromIntent(this, getIntent());
+			NfcReadActions.decryptDbInfoFromIntent(this, getIntent(), dbinfo);
 		} catch (NfcReadActions.Error error) {
 			Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
 		}

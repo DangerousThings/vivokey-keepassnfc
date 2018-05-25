@@ -32,7 +32,6 @@ import java.io.IOException;
 import android.app.Activity;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,86 +40,94 @@ import android.widget.Button;
 import android.widget.CheckBox;
 
 import com.vivokey.vivokeypass.nfccomms.KPApplet;
-import com.vivokey.vivokeypass.nfccomms.KPNdef;
 
-public class WriteNFCActivity extends Activity {
+public class WriteNFCActivity extends Activity implements WriteNFCActivityCaller {
     private static final String LOG_TAG = "WriteNFCActivity";
 
-	private byte[] randomBytes; // Key
 	private static boolean writeNdefToSmartcard = false;
+	private DatabaseInfo dbinfo;
+
+	// Password is stored separately as it is not serialised by dbinfo.
+	private byte[] password;
+
+	public static final int SUCCEEDED = 0, WRONG_PIN = 1, NFC_ERROR = 2;
 
 	private static class WriteTagResult {
-		boolean ndefWritten;
-		boolean appletWritten;
+		int result;
 	}
 
-	private class WriteTagTask extends AsyncTask<Intent, Integer, WriteTagResult>
+	private static class WriteTagTask extends AsyncTask<Intent, Integer, WriteTagResult>
 	{
+		private WriteNFCActivityCaller caller;
+		private byte[] password;
+		private byte[] previousPin;
+		private byte[] pin;
+
+		WriteTagTask(WriteNFCActivityCaller caller, byte[] password, byte[] previousPin, byte[] pin)
+		{
+			super();
+			this.caller = caller;
+			this.password = password;
+			this.previousPin = previousPin;
+			this.pin = pin;
+		}
+
 		@Override
 		protected WriteTagResult doInBackground(Intent... ndefIntent) {
 			WriteTagResult result = new WriteTagResult();
 
 			// Attempt to access the card first as a smartcard and then as an NDEF card.
-			result.appletWritten = false;
-			result.ndefWritten = false;
+			result.result = WriteNFCActivity.SUCCEEDED;
 
 			try {
 				KPApplet applet = new KPApplet();
-				result.appletWritten = applet.write(ndefIntent[0], randomBytes, writeNdefToSmartcard);
-				Log.i(LOG_TAG, "Applet discovered.");
+				if(applet.setSecretData(ndefIntent[0], password, pin, previousPin, writeNdefToSmartcard))
+					result.result = WriteNFCActivity.SUCCEEDED;
 			} catch (IOException e) {
 				e.printStackTrace();
 				Log.i(LOG_TAG, "Couldn't communicate with applet.");
+				result.result = WriteNFCActivity.NFC_ERROR;
+			} catch (KPApplet.WrongPinError wrongPinError) {
+				result.result = WriteNFCActivity.WRONG_PIN;
+				wrongPinError.printStackTrace();
 			}
 
-			if(!result.appletWritten) {
-				// try NDEF instead.
-				Tag tag = ndefIntent[0].getParcelableExtra(NfcAdapter.EXTRA_TAG);
-				KPNdef ndef = new KPNdef(randomBytes);
-				try {
-					result.ndefWritten = ndef.write(tag);
-				} catch (Exception e) {
-					e.printStackTrace();
-					result.ndefWritten = false;
-					Log.i(LOG_TAG, "Couldn't write plain NDEF");
-				}
-			}
-
+			// We can't do plain NDEF for now.
 			return result;
 		}
 
 		@Override
 		protected void onPreExecute() {
-			setUpdating(true);
+			caller.setUpdating(true);
 		}
 
 		@Override
 		protected void onPostExecute(WriteTagResult result) {
-			setUpdating(false);
+			caller.setUpdating(false);
 
-			Log.i(LOG_TAG, "Write result: applet " + result.appletWritten + " NDEF only " + result.ndefWritten);
+			Log.i(LOG_TAG, "Write result: " + result.result);
 
-			Intent resultIntent = new Intent();
-			resultIntent.putExtra("randomBytes", randomBytes);
-
-			setResult(result.appletWritten || result.ndefWritten ? 1 : 0, resultIntent);
-			finish();
+			caller.finished(result.result);
 		}
+	}
+
+	public void finished(int result) {
+		setResult(result);
+		finish();
 	}
 
     protected void onCreate(Bundle sis) {
         super.onCreate(sis);
 
-		randomBytes = getIntent().getExtras().getByteArray("randomBytes");
+        Bundle extras = getIntent().getExtras();
 
-		if(randomBytes == null) {
-            throw new RuntimeException("No randombytes supplied");
+		password = extras.getByteArray("password");
+
+		if(password == null) {
+            throw new RuntimeException("No password supplied");
         }
 
-		if(randomBytes.length != Settings.key_length) {
-			throw new RuntimeException("Unexpected key length " + randomBytes.length);
-		}
-
+	    dbinfo = DatabaseInfo.deserialise(this);
 		setContentView(R.layout.activity_write_nfc);
 
         setResult(0);
@@ -131,7 +138,7 @@ public class WriteNFCActivity extends Activity {
             public void onClick(View self) {
                 NfcReadActions.nfc_disable(WriteNFCActivity.this);
 	            Intent resultIntent = new Intent();
-	            resultIntent.putExtra("randomBytes", randomBytes);
+	            resultIntent.putExtra("password", password);
 
 	            setResult(0, resultIntent);
                 finish();
@@ -142,7 +149,7 @@ public class WriteNFCActivity extends Activity {
 
     }
 
-    private void setUpdating(boolean updating) {
+	public void setUpdating(boolean updating) {
 	    View updating_vivokey = findViewById(R.id.updating_vivokey);
 	    updating_vivokey.setVisibility(updating ? View.VISIBLE : View.INVISIBLE);
 	    updating_vivokey.requestLayout(); // Android bug apparently
@@ -173,7 +180,10 @@ public class WriteNFCActivity extends Activity {
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
 				|| NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
 
-	        new WriteTagTask().execute(intent);
+        	byte[] pin = dbinfo.pin.getBytes();
+        	byte[] previousPin = dbinfo.previousPin.getBytes();
+
+	        new WriteTagTask(this, password, previousPin, pin).execute(intent);
         }
     }
 

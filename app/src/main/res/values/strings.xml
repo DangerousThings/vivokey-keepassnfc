@@ -14,4 +14,8 @@
 	<string name="enter_your_current_pin_if_set">Enter your current PIN if one is set</string>
 	<string name="current_pin">Current PIN</string>
 	<string name="enter_your_new_pin">Enter your new PIN</string>
+	<string name="install_keepass2android">Install Keepass2Android</string>
+	<string name="install_keepassdroid">Install KeePassDroid</string>
+	<string name="we_require_keepass">VivoKeyPass integrates with your existing KeePass app and adds password-free unlocking with your VivoKey.</string>
+	<string name="please_install_a_keepass_app">Please install a KeePass app</string>
 </resources>

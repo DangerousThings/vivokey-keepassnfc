@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -7,38 +8,51 @@
 		android:id="@+id/textView2"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_marginTop="18dp"
-		android:text="No KeePass app"
+		android:layout_marginTop="15dp"
+		android:text="@string/please_install_a_keepass_app"
 		android:textAppearance="@style/TextAppearance.AppCompat.Title"
-		android:layout_alignParentTop="true"
+		android:layout_below="@id/viviokeyimage"
 		android:layout_centerHorizontal="true"/>
 
 	<TextView
 		android:id="@+id/textView3"
-		android:layout_width="wrap_content"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:layout_alignParentStart="true"
 		android:layout_below="@+id/textView2"
-		android:layout_marginTop="18dp"
-		android:layout_marginStart="18dp"
 		android:layout_marginEnd="18dp"
-		android:text="KeePassNFC requires KeePassDroid or Keepass2Android."
-		android:layout_alignParentStart="true"/>
+		android:layout_marginStart="18dp"
+		android:layout_marginTop="18dp"
+		android:text="@string/we_require_keepass"
+		android:textAlignment="center"/>
 
 	<Button
 		android:id="@+id/bInstallKeepass2Android"
-		android:layout_width="wrap_content"
+		android:layout_marginStart="50dp"
+		android:layout_marginEnd="50dp"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@+id/bInstallKeePassDroid"
 		android:layout_centerHorizontal="true"
 		android:layout_marginTop="23dp"
-		android:text="Install Keepass2Android"/>
+		android:text="@string/install_keepass2android"/>
 
 	<Button
 		android:id="@+id/bInstallKeePassDroid"
-		android:layout_width="wrap_content"
+		android:layout_marginStart="50dp"
+		android:layout_marginEnd="50dp"
+		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_below="@+id/textView3"
 		android:layout_centerHorizontal="true"
 		android:layout_marginTop="53dp"
-		android:text="Install KeePassDroid"/>
+		android:text="@string/install_keepassdroid"/>
+
+	<ImageView
+		android:id="@+id/viviokeyimage"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentTop="true"
+		app:srcCompat="@drawable/logo_with_keepass"/>
 </RelativeLayout>
